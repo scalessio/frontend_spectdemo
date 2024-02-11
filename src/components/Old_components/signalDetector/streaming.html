@@ -1,0 +1,290 @@
+<div class="container-fluid">
+
+    <h1>Spectrum Decoder</h1>
+
+    <!--
+    <div style="position: absolute; top: 75px; right: 15px;">
+        <span>
+            Coins: {{ $ctrl.coins }}
+            <button class="btn btn-xs btn-warning" ng-click="$ctrl.addCoins()" style="cursor: pointer">+5</button>
+        </span>
+    </div>
+    -->
+
+    <div id="sensor-status" class="panel panel-default">
+        <div class="panel-heading">
+            <button class="btn btn-danger btn-xs"  ng-show="$ctrl.webrtcStatus == 'connected'" ng-click="$ctrl.disconnect()">Disconnect</button>
+
+            <span ng-show="$ctrl.webrtcStatus == 'disconnected'">
+                Select a sensor to connect to
+            </span>
+
+            <span ng-show="$ctrl.webrtcStatus === 'connecting'">
+                Connecting to {{ $ctrl.sensorInfo[$ctrl.selectedSensor].name || '[' + sensor + ']' }}...
+            </span>
+
+            <span ng-show="$ctrl.webrtcStatus === 'connected'">
+                Connected to {{ $ctrl.sensorInfo[$ctrl.selectedSensor].name || '[' + $ctrl.selectedSensor + ']' }}
+            </span>
+
+        </div>
+
+        <div class="panel-body" ng-show="$ctrl.webrtcStatus !== 'connected'">
+
+            <form class="form-inline streaming-form" ng-if="$ctrl.webrtcStatus != 'connected' && $ctrl.sensors.length > 0">
+                <label for="sensor-search">Search Sensor</label>
+                <div class="form-group">
+                        <input class="form-control" name="sensor-search" type="search"
+                               placeholder="Sensor name"
+                               ng-model="$ctrl.searchValue"
+                               autocomplete="off"
+                               typeahead-show-hint="true"
+                               typeahead-editable="false"
+                               typeahead-select-on-blur="false"
+                               typeahead-on-select="$ctrl.connectToSensor($item.serial)"
+                               typeahead-template-url="searchTemplate.html"
+                               typeahead-min-length="2"
+                               uib-typeahead="sensor.name as sensor.name for sensor in $ctrl.joinedSensorInfo | filter:{name: $viewValue, rtcStatus: 'ready'} | limitTo:15"
+                               class="form-control input-sm">
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success"
+                            ng-click="$ctrl.connectToSensorName($ctrl.searchValue)"
+                            ng-disabled="$ctrl.webrtcStatus === 'connecting'">Connect</button>
+                </div>
+            </form>
+
+            <div class="alert alert-warning" ng-if="$ctrl.error !== null" role="alert">
+                <p>{{$ctrl.error}}</p>
+            </div>
+
+            <es-leaflet-map ng-show="$ctrl.webrtcStatus === 'disconnected'"
+                    sensors="$ctrl.joinedSensorInfo"
+                    rtc="true"
+                    on-select="$ctrl.connectToSensor(serial)"
+                    marker-cluster="false"
+                    hover-marker="true"
+                    scrolling="true"
+            ></es-leaflet-map>
+
+            <div class="signaling-loader" ng-show="$ctrl.webrtcStatus === 'connecting'">
+                <div class="lds-ripple"><div></div><div></div></div>
+                <h3>Connecting...</h3>
+            </div>
+
+            <!-- form class="form-inline" ng-if="$ctrl.webrtcStatus != 'connected' && $ctrl.sensors.length > 0">
+                <div class="form-group">
+                    <label for="sensor">Test Sensors</label>
+                    <select name="sensor" id="sensor" class="form-control" ng-disabled="$ctrl.webrtcStatus == 'connecting'" ng-model="$ctrl.selectedSensor">
+                        <option ng-repeat="sensor in $ctrl.sensors" ng-value="sensor" ng-disabled="$ctrl.sensorStates.get(sensor) != 'ready'">
+                            {{ $ctrl.sensorInfo[sensor].name || '[' + sensor + ']' }} [{{ $ctrl.sensorStates.get(sensor) }}]
+                        </option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-default" ng-disabled="!$ctrl.selectedSensor || $ctrl.coins < 1" ng-click="$ctrl.connectToSensor($ctrl.selectedSensor)">Connect</button>
+            </form -->
+
+        </div>
+    </div>
+
+    <div id="decoding-controls" ng-show="$ctrl.webrtcStatus == 'connected'" style="position: relative;">
+
+        <div id="overlayContainer" style="position: absolute; left: 0; top: 0; height: 530px; box-sizing: border-box; pointer-events: none; z-index: 2;" ng-style="{'margin-left': $ctrl.sliderWidth + 'px', 'width': 'calc(100% - '+$ctrl.sliderWidth+'px)'}">
+            <div ng-repeat="box in $ctrl.detectedSignalsBoxes"
+                 style="border-left: 1px solid black; border-right: 1px solid black; background: rgba(212,212,212,0.42); position: absolute; top: 0; height: 100%; z-index: 1; display: flex; justify-content: center;" ng-style="{left: box[0] + '%', width: box[1] + '%'}">
+                <div style="color: black; font-size: 12px; flex: 0 0 auto;">{{box[2]}} {{box[3]}}</div>
+            </div>
+        </div>
+
+        <live-power-levels hover-freq="$ctrl.hoverFreq"
+                        highlight-freqs="$ctrl.detectedSignals"
+                        on-freq-click="$ctrl.waterfallClick(event)"
+                        ng-show="$ctrl.showWaterfall"
+                        enable-interaction="$ctrl.controlsEnabled"
+                        show-slider="true"
+                        hide-tooltip="false"
+                        upper-threshold="$ctrl.upperThreshold"
+                        lower-threshold="$ctrl.lowerThreshold"
+        >
+        </live-power-levels>
+
+        <live-waterfall hover-freq="$ctrl.hoverFreq"
+                        highlight-freqs="$ctrl.detectedSignals"
+                        on-freq-click="$ctrl.waterfallClick(event)"
+                        ng-show="$ctrl.showWaterfall"
+                        enable-interaction="$ctrl.controlsEnabled"
+                        show-slider="true"
+                        hide-tooltip="false"
+                        upper-threshold="$ctrl.upperThreshold"
+                        lower-threshold="$ctrl.lowerThreshold"
+        ></live-waterfall>
+
+        <div class="row" style="margin-top: 25px;" ng-show="$ctrl.webrtcStatus == 'connected'">
+            <div class="col-sm-2">
+                Center Frequency:
+            </div>
+            <div class="col-sm-7" style="margin: -20px;">
+                <rzslider rz-slider-model="$ctrl.selectedFreq"
+                          rz-slider-options="{floor: 0, ceil: 6e9, hideLimitLabels: true, onEnd: $ctrl.retune, disabled: !$ctrl.controlsEnabled}"
+                ></rzslider>
+            </div>
+            <div class="col-sm-3">
+                <es-sel-freq selected-frequency="$ctrl.selectedFreq" is-disabled="!$ctrl.controlsEnabled"></es-sel-freq>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 15px;" ng-show="$ctrl.webrtcStatus == 'connected'">
+            <div class="col-sm-2">
+                Antenna Gain:
+            </div>
+            <div class="col-sm-7" style="margin: -20px;">
+                <rzslider rz-slider-model="$ctrl.antennaGain"
+                          rz-slider-options="{floor: 0, ceil: 49, hideLimitLabels: true, onEnd: $ctrl.retune}"
+                ></rzslider>
+            </div>
+            <div class="col-sm-3">
+                <input type="number" ng-value="$ctrl.antennaGain" min="0" max="49" ng-show="$ctrl.antennaGain != 0">
+                <span ng-show="$ctrl.antennaGain == 0">Auto</span>
+            </div>
+        </div>
+
+        <audio id="audio" autoplay controls class="hidden"></audio>
+
+        <uib-tabset active="activeJustified" style="margin-top: 20px;">
+            <uib-tab index="0" heading="FM Radio" select="$ctrl.changeTab('fm')">
+                <div class="row">
+                    <div class="col-sm-1" style="margin-top: 25px;">
+                        Volume:
+                    </div>
+                    <div class="col-sm-11">
+                        <rzslider rz-slider-model="$ctrl.volumeSliderVal" rz-slider-options="{floor: 0, showTicks: true, step: 1, ceil: 10, onEnd: $ctrl.retune}"></rzslider>
+                    </div>
+                </div>
+            </uib-tab>
+
+            <uib-tab index="1" heading="AM Radio" select="$ctrl.changeTab('am')">
+                <div class="row">
+                    <div class="col-sm-1" style="margin-top: 25px;">
+                        Volume:
+                    </div>
+                    <div class="col-sm-11">
+                        <rzslider rz-slider-model="$ctrl.volumeSliderVal" rz-slider-options="{floor: 0, showTicks: true, step: 1, ceil: 10, onEnd: $ctrl.retune}"></rzslider>
+                    </div>
+                </div>
+            </uib-tab>
+
+            <uib-tab index="2" heading="ADS-B" select="$ctrl.changeTab('adsb')">
+                <flightmap aircraft="true" refresh="$ctrl.selectedDecoder"></flightmap>
+            </uib-tab>
+
+            <uib-tab index="3" heading="AIS" select="$ctrl.changeTab('ais')">
+                <flightmap ships="true" refresh="$ctrl.selectedDecoder"></flightmap>
+            </uib-tab>
+
+            <uib-tab index="4" heading="ACARS" select="$ctrl.changeTab('acars')">
+
+                <table class="table table-condensed" ng-repeat="m in $ctrl.acarsMsgs" style="border: 1px solid #ccc;">
+                    <tr class="text-muted">
+                        <td>
+                            <strong>Time:</strong> {{ m.timestamp*1000 | date:'medium' }}
+                        </td>
+                        <td>
+                            <strong>Registration: </strong> {{m.tail}}
+                        </td>
+                        <td>
+                            <strong>Flight: </strong> {{ m.flight }}
+                        </td>
+                    </tr>
+                    <tr class="text-muted">
+                        <td>
+                            <strong>Channel: </strong> {{m.channel}}
+                        </td>
+                        <td>
+                            <strong>Frequency: </strong> {{ m.freq*1000000 | hzunit}}
+                        </td>
+                        <td>
+                            <strong>Level: </strong> {{ m.level }}dB
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">
+                            <code>{{m.text}}</code>
+                        </td>
+                    </tr>
+                </table>
+
+            </uib-tab>
+
+            <uib-tab index="5" heading="LTE" select="$ctrl.changeTab('lte')">
+
+                <table class="table table-condensed" ng-show="$ctrl.lteResults.length > 0" style="border: 1px solid #ccc;">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Antennas</th>
+                            <th>Frequency</th>
+                            <th>Offset</th>
+                            <th>Power</th>
+                            <th>CPType</th>
+                            <th>nRB</th>
+                            <th>PHICHDuration</th>
+                            <th>PHICHResource</th>
+                            <th>Corr. Factor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="m in $ctrl.lteResults" >
+                            <td>{{ m.CID }}</td>
+                            <td>{{ m.NumberAntennaPorts }}</td>
+                            <td>{{ m.CarrierFrequency | hzunit }}</td>
+                            <td>{{ m.FrequencyOffsetHz }}</td>
+                            <td>{{ m.RxPowerdB }}dB</td>
+                            <td>{{ m.CPType }}</td>
+                            <td>{{ m.nRB }}</td>
+                            <td>{{ m.PHICHDuration }}</td>
+                            <td>{{ m.PHICHResource }}</td>
+                            <td>{{ m.CrystalCorrectionFactor }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="well">
+                    <ul class="list-unstyled">
+                        <li ng-repeat="m in $ctrl.lteMsgs">
+                            <span class="text-muted">{{m.time | date:'medium' }}</span>
+
+                            <span style="width: 20px;"></span>
+
+                            <span class="text-info">{{ m.payload }}</span>
+                        </li>
+                    </ul>
+                </div>
+
+            </uib-tab>
+        </uib-tabset>
+    </div> <!-- / decoding controls -->
+
+</div> <!-- /container -->
+
+
+<div class="text-center white-overlay" ng-if="$ctrl.signalingStatus !== 'connected'">
+    <div ng-if="$ctrl.signalingStatus == 'connecting'">
+        <h2 class="text-info">Connecting Backend...</h2>
+    </div>
+
+    <div ng-if="$ctrl.signalingStatus == 'disconnected'">
+        <h2 class="text-danger">Disconnected</h2>
+        <p>
+            The control connection to the backend is unavailable. There might be an error on our side. You can retry,
+            refresh the page or come back later.
+        </p>
+        <button class="btn btn-warning" ng-click="$ctrl.connectToSignalingServer()">Retry</button>
+    </div>
+
+</div>
+
+<script type="text/ng-template" id="searchTemplate.html">
+    <a style="cursor: pointer;">
+        <span ng-bind-html="match.model.name | uibTypeaheadHighlight:query"></span>
+        {{ match.model.rtcStatus !== 'ready' ? '(not available)' : ''}}
+    </a>
+</script>
