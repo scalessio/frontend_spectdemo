@@ -42,7 +42,7 @@ class HeaderComponent extends Component{
 
                 <nav className="navbar navbar-main navbar-expand-lg border-bottom">
                     <Menu />
-                </nav> 
+                </nav>
 
             </div>
         )

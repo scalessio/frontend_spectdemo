@@ -73,8 +73,7 @@ export default class PSDCampComponent extends Component {
                     {startf: val_fstar, endf:val_f_end, FreqStartHz:val_FreqStart, FreqEndHz:val_FreqEnd, ok_req:true}, () => {
                         console.log(this.state.startf);console.log(this.state.endf);console.log(this.state.FreqStartHz);console.log(this.state.FreqEndHz);
                     })
-            }
-            
+            } 
             else if (e=="rangeFreq_180"){
                 console.log("Selected : set_fstart_180"); 
                 let val_fstar='180'
@@ -188,7 +187,7 @@ export default class PSDCampComponent extends Component {
                     </Row>
                     }
                     <Row>
-                        <Waterfall dataProps={this.state.specData} dataLabel={this.state.predicted_tech} dataBin={this.state.tx_bin} dataSpan={this.state.spectrum_span}  dataCenterF={[this.state.FreqStartHz,this.state.FreqEndHz]}/>
+                        <Waterfall dataSpectrum={this.state.specData} dataLabel={this.state.predicted_tech} dataBin={this.state.tx_bin} dataSpan={this.state.spectrum_span}  dataCenterF={[this.state.FreqStartHz,this.state.FreqEndHz]}/>
                     </Row>        
 
                     
@@ -243,30 +242,30 @@ export default class PSDCampComponent extends Component {
                 freq_end:value_FreqEnd});
             });
 
-            socket.on('ready_processffts', function() {
-                console.log(val_kfk)
-                console.log("Send request transmission detection")
-                socket.emit('process_raw_ffts')
-                
-            });
+            // socket.on('ready_processffts', function() {
+            //     console.log(val_kfk)
+            //     console.log("Send request transmission detection")
+            //     socket.emit('process_raw_ffts')
+            // });
             
             socket.on('ready_detect_tx', function() {
                 console.log("Emit detect transmissions..")
                 socket.emit('tx_detection')
             });
-        
+
             socket.on('ready_predict', function() {
                 socket.emit('predict_pipeline');
                 console.log("Send request pipeline")
             });
-        
+
             socket.on('end_prediction',(data) => {
+                
                 this.setState( 
                     {   predicted_tech: data.pred_labels, 
                         Tx_res: data.TX_res_time,
                         TC_res:data.TC_res_time,
                         Total_res:data.Total_res_time,
-                        specData:data.spec_data ,
+                        specData:data.spec_data,
                         spec_Labels:data.pred_labels,
                         spectrum_span : data.spec_span_bins,
                         tx_bin:data.tx_array_bins}, () => 
