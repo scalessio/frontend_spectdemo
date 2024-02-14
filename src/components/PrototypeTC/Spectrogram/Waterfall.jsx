@@ -10,7 +10,7 @@ export default class Waterfall extends Component{
         super(props);
         //this.handleChangeData = this.handleChangeData.bind(this);
         this.state = { // Not necessary to keep the other states as they are passed down from the parent component
-             isDrawing: false,}
+         isDrawing: false,}
     }
 
     // handleChangeData(e){ // Not needed, because this component(waterfall) does not need to modify or manage the state directly but instead uses the props passed down from the parent component.
@@ -92,7 +92,7 @@ export default class Waterfall extends Component{
 
             if (index < dataSpectrum.length && this.state.isDrawing) {
                 spectrum.addData(dataSpectrum[index]);
-                spectrum.addBoxPlot(dataLabel, dataBin);
+                //spectrum.addBoxPlot(dataLabel, dataBin);
                 if (index === dataSpectrum.length - 1) {
                     index = -1;
                 }

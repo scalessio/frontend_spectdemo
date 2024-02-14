@@ -106,9 +106,9 @@ export default class PSDCampComponent extends Component {
                                                     id="dropdown-menu-align-right"
                                                     variant='success'
                                                     onSelect={handleSelectCampaing}> 
-                                                    <Dropdown.Item eventKey="rangeFreq_80">80-120 MHz </Dropdown.Item>
+                                                    {/* <Dropdown.Item eventKey="rangeFreq_80">80-120 MHz </Dropdown.Item>
                                                     <Dropdown.Item eventKey="rangeFreq_test">20-1500 MHz </Dropdown.Item>
-                                                    <Dropdown.Item eventKey="rangeFreq_790">790-820 MHz </Dropdown.Item>
+                                                    <Dropdown.Item eventKey="rangeFreq_790">790-820 MHz </Dropdown.Item> */}
                                                     <Dropdown.Item eventKey="rangeFreq_180">180-230 MHz </Dropdown.Item>
                                                     
                                                     
@@ -127,7 +127,7 @@ export default class PSDCampComponent extends Component {
                             </Table>
                         </Col>
 
-                        <Col className="mt-4"  > 
+                        {/* <Col className="mt-4"  > 
                             
                             <Table striped bordered hover>
                                 <thead>
@@ -145,7 +145,7 @@ export default class PSDCampComponent extends Component {
                                     </tr>
                                 </tbody>
                                 </Table>
-                            </Col>
+                            </Col> */}
 
                         
 
