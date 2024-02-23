@@ -240,6 +240,25 @@ export default class PSDCampComponent extends Component {
             console.log("Emit inject signals..")
             socket.emit('inject_signals')
 
+            socket.on('end_prediction',(data) => {
+                this.setState( 
+                    {   
+                        ok_show : true,
+                        predicted_tech: data.pred_labels,        //#Predicted Labels Array --> [4.0, 'lte', 49.32, 51.51]
+                        Tx_res: data.TX_res_time,
+                        TC_res:data.TC_res_time,
+                        Total_res:data.Total_res_time,
+                        specData:data.spec_data,                 //#Just to send a portion of the spectrum e.g.[60, 1000]
+                        specLabels:data.pred_labels,            //#Predicted Labels Array --> [4.0, 'lte', 49.32, 51.51]
+                        spectrum_span : data.spec_span_bins,     //#indicate the number of bins of the spectrum
+                        tx_bin:data.tx_array_bins}, () =>        //#indicate the strt and the end of detected Transmissions
+                    {
+                        console.log("States setted -- Data injected");
+                        console.log(this.state.ok_show);
+                    })
+
+            });
+
     }
 
 

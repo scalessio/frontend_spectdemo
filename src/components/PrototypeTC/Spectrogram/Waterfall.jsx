@@ -8,26 +8,33 @@ export default class Waterfall extends Component{
 
     constructor(props) {
         super(props);
-        this.timeoutIDs = []; // Array to track timeout IDs
+        this.spectrum = null; // Inizializza qui l'istanza di Spectrum come null
+        this.timeoutIDs = []; // Per tracciare i timeout
+        this.currentIndex = 0; // Inizializza la variabile index a 0
+        this.firstTime = true;
         //this.canvasRef = React.createRef(); // Aggiungi questa linea
         //this.handleChangeData = this.handleChangeData.bind(this);
         this.state = {// Not necessary to keep the other states as they are passed down from the parent component
             isDrawing: false,
             //canvasWidth: window.innerWidth // initialize with a predefined width
         };
-    }    
-
-    componentWillUnmount() {
-        // Ensure that all timeouts are cleared when the component is unmounted
-        this.timeoutIDs.forEach((id) => clearTimeout(id));
     }
 
     componentDidUpdate(prevProps) {
         // Controlla se i dati rilevanti sono cambiati
         if (this.props.dataLabel.length !== prevProps.dataLabel.length || this.props.dataBin.length !== prevProps.dataBin.length ) {
+            this.currentIndex = 0;
             console.log("I dati dello spettro sono cambiati, riavvio il disegno...");
             this.stopDrawing(); // Stop drawing if it's already started
             const { dataSpectrum, dataLabel, dataBin, dataSpan, dataCenterF} = this.props; 
+            if (this.firstTime===true) {
+                console.log("First time drawing the spectrum...");
+                this.spectrum = new Spectrum("waterfall", { spanHz: parseInt(dataSpan, 10) });
+                let cf = (parseInt(dataCenterF[0], 10) + parseInt(dataCenterF[1], 10)) / 2;
+                let span = dataSpan * 10000;
+                this.spectrum.setCenterHz(cf);
+                this.spectrum.setSpanHz(span);
+                this.firstTime = false;}
             this.startDrawing()
             // Potresti voler cancellare il disegno precedente qui
             // spectrum.clear() o un'operazione simile
@@ -80,35 +87,27 @@ export default class Waterfall extends Component{
     }
 
     showSpectrum = () => {
-        if (!this.state.isDrawing) return;
-        // Spectrum, Labels, Start and End Frequency, Span (entire spectrum), Center Frequency, (center of the spectrum)
-        const { dataSpectrum, dataLabel, dataBin, dataSpan, dataCenterF} = this.props;  
-        let a = dataCenterF[0]; 
-        let b = dataCenterF[1];
-        let cf = (parseInt(a,10) + parseInt(b,10)) / 2;
-        let span = dataSpan * 10000;
-        var spectrum = new Spectrum("waterfall", { spanHz: parseInt(dataSpan,10) });
-        spectrum.setCenterHz(cf);
-        spectrum.setSpanHz(span);
-        console.log("Span --",span)
-        console.log(span / 10000)
-
-        // auxiliar function to add data with delay
-        const addDataWithDelay = (index) => {
-            if (!this.state.isDrawing) return;
-
-            if (index < dataSpectrum.length && this.state.isDrawing) {
-                spectrum.addData(dataSpectrum[index]);
-                spectrum.addBoxPlot(dataLabel, dataBin);
-                if (index === dataSpectrum.length - 1) {
-                    index = -1;
-                }
-                let timeoutID = setTimeout(() => addDataWithDelay(index + 1), 50);
-                this.timeoutIDs.push(timeoutID); // store timeout id
-            }
-        };
-        addDataWithDelay(0); // Start adding data with delay from index 0
+        if (!this.state.isDrawing || !this.spectrum) return; // Controlla che il disegno sia attivo e che spectrum esista
+        const { dataSpectrum, dataLabel, dataBin, dataSpan, dataCenterF} = this.props; 
+        this.addDataWithDelay(this.currentIndex); // Start adding data with delay from index 0
     }
+
+    addDataWithDelay = (index) => {
+        if (!this.state.isDrawing) return;
+        const { dataSpectrum, dataLabel, dataBin } = this.props;
+        if (index < dataSpectrum.length) {
+            this.spectrum.addData(dataSpectrum[index]);
+            this.spectrum.addBoxPlot(dataLabel, dataBin);
+            this.currentIndex = index + 1; // Aggiorna currentIndex per la prossima iterazione
+
+            if (this.currentIndex === dataSpectrum.length) {
+                this.currentIndex = 0; // Ripeti dal primo indice se necessario
+            }
+
+            let timeoutID = setTimeout(() => this.addDataWithDelay(this.currentIndex), 50);
+            this.timeoutIDs.push(timeoutID);
+        }
+    };
 }
 
 
