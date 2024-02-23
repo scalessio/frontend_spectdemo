@@ -6,45 +6,45 @@ import './Waterfall.css'
 
 export default class Waterfall extends Component{
 
-    constructor(props){
+    constructor(props) {
         super(props);
+        this.timeoutIDs = []; // Array to track timeout IDs
+        //this.canvasRef = React.createRef(); // Aggiungi questa linea
         //this.handleChangeData = this.handleChangeData.bind(this);
-        this.state = { // Not necessary to keep the other states as they are passed down from the parent component
-         isDrawing: false,}
+        this.state = {// Not necessary to keep the other states as they are passed down from the parent component
+            isDrawing: false,
+            //canvasWidth: window.innerWidth // initialize with a predefined width
+        };
+    }    
+
+    componentWillUnmount() {
+        // Ensure that all timeouts are cleared when the component is unmounted
+        this.timeoutIDs.forEach((id) => clearTimeout(id));
     }
 
-    // handleChangeData(e){ // Not needed, because this component(waterfall) does not need to modify or manage the state directly but instead uses the props passed down from the parent component.
-    //     this.props.dataProps(e.target.id, e.target.value);
-    //     this.props.dataLabel(e.target.id, e.target.value);
-    //     this.props.dataBin(e.target.id, e.target.value);
-    //     this.props.dataSpan(e.target.id, e.target.value);
-    //     this.props.dataCenterF(e.target.id, e.target.value);
-    // } , why:
-    // One-way Data Flow: React components typically follow a unidirectional
-    // (one-way) data flow, where state is managed in parent components and passed 
-    // down to child components via props. In your case, PSDCampComponent.jsx acts as
-    // the parent component managing and receiving state from the backend, and Waterfall.jsx 
-    // is the child component that visualizes this data. The child component does not need to
-    // modify or manage the state directly but instead uses the props passed down from the
-    // parent component.
+    componentDidUpdate(prevProps) {
+        // Controlla se i dati rilevanti sono cambiati
+        if (this.props.dataLabel.length !== prevProps.dataLabel.length || this.props.dataBin.length !== prevProps.dataBin.length ) {
+            console.log("I dati dello spettro sono cambiati, riavvio il disegno...");
+            this.stopDrawing(); // Stop drawing if it's already started
+            const { dataSpectrum, dataLabel, dataBin, dataSpan, dataCenterF} = this.props; 
+            this.startDrawing()
+            // Potresti voler cancellare il disegno precedente qui
+            // spectrum.clear() o un'operazione simile
+            // Riavvia il processo di disegno con i nuovi dati
+        }
+    }
 
-    //componentDidMount() {
-        // var spect = new Spectrum(
-        //     "waterfall", {
-        // });
-        //spect.setCenterHz(100000000); //--> THE CENTER DEPENDS ON THE SPECTRUM THAT WE ARE ANALYZING, DEPENDS ON THE SPECTRUM DATA
-        //spect.setSpanHz(37470000);  //--> THE SPAN DEPENDS ON THE SPECTRUM THAT WE ARE ANALYZING, DEPENDS ON THE SPECTRUM DATA
-    //}
-    
     render(){
+        const { ok_show_butt } = this.props;
         return(
             <div className='LiveWaterfall'>
-                    <header class="section-heading">
+                    <header className="section-heading">
                         <h4></h4>
                         <div class='container'>
                             <div class="row">  
-                                <div class="col">
-                                <button type="button" className="btn btn-warning" onClick={this.startDrawing}>Show Spectrum</button>
+                                <div className="col">
+                                <button type="button" className="btn btn-warning" disabled={!ok_show_butt} onClick={this.startDrawing}>Show Spectrum</button>
                                 </div>
                                 <div className="col">
                                     <button type="button" className="btn btn-warning" onClick={this.stopDrawing}>Stop Drawing</button>
@@ -53,7 +53,8 @@ export default class Waterfall extends Component{
                         </div>
                     </header>                    
                     <body>
-                        <canvas id="waterfall" style={{ border: "8px solid #d3d3a3" }}></canvas>
+                    {/* ref={this.canvasRef} */}
+                    <canvas id="waterfall" style={{border: "8px solid #d3d3a3" }}></canvas>
                         <p/>
                     </body>
             </div>
@@ -72,12 +73,16 @@ export default class Waterfall extends Component{
     }
 
     stopDrawing = () => {
+        // Clear all the timeout
+        this.timeoutIDs.forEach((id) => clearTimeout(id));
+        this.timeoutIDs = []; // Reset dell'array di ID dopo la cancellazione
         this.setState({ isDrawing: false });
     }
+
     showSpectrum = () => {
         if (!this.state.isDrawing) return;
-
-        const { dataSpectrum, dataLabel, dataBin, dataSpan, dataCenterF} = this.props;
+        // Spectrum, Labels, Start and End Frequency, Span (entire spectrum), Center Frequency, (center of the spectrum)
+        const { dataSpectrum, dataLabel, dataBin, dataSpan, dataCenterF} = this.props;  
         let a = dataCenterF[0]; 
         let b = dataCenterF[1];
         let cf = (parseInt(a,10) + parseInt(b,10)) / 2;
@@ -85,24 +90,27 @@ export default class Waterfall extends Component{
         var spectrum = new Spectrum("waterfall", { spanHz: parseInt(dataSpan,10) });
         spectrum.setCenterHz(cf);
         spectrum.setSpanHz(span);
-    
+        console.log("Span --",span)
+        console.log(span / 10000)
+
         // auxiliar function to add data with delay
         const addDataWithDelay = (index) => {
             if (!this.state.isDrawing) return;
 
             if (index < dataSpectrum.length && this.state.isDrawing) {
                 spectrum.addData(dataSpectrum[index]);
-                //spectrum.addBoxPlot(dataLabel, dataBin);
+                spectrum.addBoxPlot(dataLabel, dataBin);
                 if (index === dataSpectrum.length - 1) {
                     index = -1;
                 }
-                
-                setTimeout(() => addDataWithDelay(index + 1), 50); // use setTimeout to add data with delay
+                let timeoutID = setTimeout(() => addDataWithDelay(index + 1), 50);
+                this.timeoutIDs.push(timeoutID); // store timeout id
             }
         };
-    
-        
         addDataWithDelay(0); // Start adding data with delay from index 0
+    }
+}
+
 
 
         // this.setState({
@@ -138,6 +146,27 @@ export default class Waterfall extends Component{
         //             spectrum.addBoxPlot(this.state.transmissions,this.state.tx_bin)
         //         } 
         //     }) 
-    }
-}
 
+
+    // handleChangeData(e){ // Not needed, because this component(waterfall) does not need to modify or manage the state directly but instead uses the props passed down from the parent component.
+    //     this.props.dataProps(e.target.id, e.target.value);
+    //     this.props.dataLabel(e.target.id, e.target.value);
+    //     this.props.dataBin(e.target.id, e.target.value);
+    //     this.props.dataSpan(e.target.id, e.target.value);
+    //     this.props.dataCenterF(e.target.id, e.target.value);
+    // } , why:
+    // One-way Data Flow: React components typically follow a unidirectional
+    // (one-way) data flow, where state is managed in parent components and passed 
+    // down to child components via props. In your case, PSDCampComponent.jsx acts as
+    // the parent component managing and receiving state from the backend, and Waterfall.jsx 
+    // is the child component that visualizes this data. The child component does not need to
+    // modify or manage the state directly but instead uses the props passed down from the
+    // parent component.
+
+    //componentDidMount() {
+        // var spect = new Spectrum(
+        //     "waterfall", {
+        // });
+        //spect.setCenterHz(100000000); //--> THE CENTER DEPENDS ON THE SPECTRUM THAT WE ARE ANALYZING, DEPENDS ON THE SPECTRUM DATA
+        //spect.setSpanHz(37470000);  //--> THE SPAN DEPENDS ON THE SPECTRUM THAT WE ARE ANALYZING, DEPENDS ON THE SPECTRUM DATA
+    //}

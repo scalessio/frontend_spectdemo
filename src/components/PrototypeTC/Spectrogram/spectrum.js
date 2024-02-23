@@ -61,16 +61,15 @@ Spectrum.prototype.createLabel = function(labelTech,start,colorStyle,confidence)
     this.ctx.fillText(confidence, start/2, 280);
 }
 // Add data methods take as input the bins
-Spectrum.prototype.addBoxPlot = function(transmissions_labels, transmission_bins){
-    console.log(transmissions_labels)
+Spectrum.prototype.addBoxPlot = function(transmissions_labels, transmission_bins){ 
     // if(transmissions_labels.length > 8){
     //     transmissions_labels.length = transmissions_labels.length-3
     // }
     for (let i = 0; i < transmissions_labels.length ; i++) { 
         //labelindex, confidence, startf, endf
         var tx_1 = transmission_bins[i]    
-        var start =  tx_1[0]
-        var end = tx_1[1]
+        var start =  tx_1[0] 
+        var end = tx_1[1] 
         var widt = (end-start)/2
 
         var selected__signal = transmissions_labels[i] 
@@ -82,10 +81,15 @@ Spectrum.prototype.addBoxPlot = function(transmissions_labels, transmission_bins
         this.ctx.lineWidth = 1;
         this.ctx.strokeStyle = 'green';
         this.createLabel(signalLabel,start,colorLabel,signalLabel_confidence)
-        this.ctx.strokeRect(start/2, 90, widt, 100);
+        this.ctx.strokeRect(start/2, 90, widt, this.canvas.height);
     }
     
 }
+
+// Spectrum.prototype.updateCanvasSize = function(width, dataSpan) {
+//     this.canvasWidth = width;
+//     this.scaleFactor = this.canvasWidth / dataSpan; // Qui dataSpan deve essere nella stessa unità usata per definire la larghezza dello spettro
+// };
 
 Spectrum.prototype.drawFFT = function(bins) {
     
