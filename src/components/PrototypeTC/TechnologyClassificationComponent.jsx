@@ -11,9 +11,7 @@ export default class TechnologyClassificationComponent extends Component{
             <div className='TechnologyClassificationComponent'>
                 <p/>
                 <h2> Spectrum Anomaly Detection Engine </h2>
-                
                 <PSDCampComponent/>
-                {/* <Waterfall/> */}
                 <p/>
                 
             </div>

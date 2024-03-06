@@ -15,6 +15,7 @@
     "react-native-grid-component": "^2.0.1",
     "react-router-dom": "^5.2.1",
     "react-scripts": "4.0.3",
+    "react-toastify": "^10.0.4",
     "web-vitals": "^1.1.2"
   },
   "scripts": {

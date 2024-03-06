@@ -10,13 +10,15 @@ import { io } from "socket.io-client";
 import { Link } from 'react-router-dom';
 
 
-
 export default class PSDCampComponent extends Component {
     
     constructor(props){
         super(props)
         
         this.state = { 
+            
+            showToast: false, // Add this line
+            toastMessage: 'Connected', // Add this line to customize the message dynamically
             predicted_tech: '--',
             Es_res:'--',
             Tx_res:'--',
@@ -55,7 +57,7 @@ export default class PSDCampComponent extends Component {
                 let val_fstar='20';
                 let val_f_end='1500';
                 let val_FreqStart='20000000';
-                let val_FreqEnd='1500000000';
+                let val_FreqEnd='1500100000';
                 this.setState( 
                     {startf: val_fstar, endf:val_f_end, FreqStartHz:val_FreqStart, FreqEndHz:val_FreqEnd, ok_req:true}, () => 
                     {console.log(this.state.startf);console.log(this.state.endf);console.log(this.state.FreqStartHz);console.log(this.state.FreqEndHz);
@@ -93,10 +95,10 @@ export default class PSDCampComponent extends Component {
                 <Container fluid>
 
                     {/* Knobs Request */}
-                    <Row className="mx-auto" >
+                    <Row>
                         <Col className="mt-4"  > 
                         
-                        <Table striped bordered hover>
+                        <Table striped bordered hover className="table-custom-text">
                             <thead>
                                 <tr>
                                 <th>Selected Sensor</th>
@@ -105,12 +107,7 @@ export default class PSDCampComponent extends Component {
                                                     id="dropdown-menu-align-right"
                                                     variant='success'
                                                     onSelect={handleSelectCampaing}> 
-                                                    {/* <Dropdown.Item eventKey="rangeFreq_80">80-120 MHz </Dropdown.Item>
-                                                    <Dropdown.Item eventKey="rangeFreq_test">20-1500 MHz </Dropdown.Item>
-                                                    <Dropdown.Item eventKey="rangeFreq_790">790-820 MHz </Dropdown.Item> */}
                                                     <Dropdown.Item eventKey="rangeFreq_180">180-230 MHz </Dropdown.Item>
-                                                    
-                                                    
                                     </DropdownButton></th>
                                 </tr>
                             </thead>
@@ -126,32 +123,10 @@ export default class PSDCampComponent extends Component {
                             </Table>
                         </Col>
                         
-                        <Col className="mt-4">
-                        <Table align='center' borderless>
-                            <tbody>
-                                <tr>
-                                    {/* <Form.Group>
-                                        <Form.Check
-                                            type="switch"
-                                            id="custom-switch"
-                                            label=" Kakfa"
-                                            ref="enableKafka"
-                                            onChange={this.handleEnableKfk}
-
-                                        />
-                                    </Form.Group> */}      
-                                <td> <button type="button" class="btn btn-warning" onClick={this.processData} disabled={!this.state.ok_req}> Start Campaign </button>  </td>
-                                <td> <button type="button" class="btn btn-warning" onClick={this.injectData}> Attack </button>  </td>
-                                </tr>
-                                {/* <td> <button type="button" class="btn btn-warning" onClick={this.framework_test} > Framework_test  </button>  </td>
-                                <td> <button type="button" class="btn btn-warning" onClick={this.framework_dev_container} > Framework_test_dev  </button>  </td> 
-                                <td> <button type="button" class="btn btn-warning" onClick={this.baseline_test} > Baseline_test  </button>  </td>*/}
-                                {/* <tr>
-                                <td><button type="button" class="btn btn-warning" onClick={this.reset_values}> Reset </button></td>
-                                </tr> */}
-                            </tbody>
-                            </Table>
-                            {/* <AlertButCustom/> */}
+                        <Col className="mt-5">
+                        <button type="button" class="btn btn-warning btn-lg btn-warning-custom"  onClick={this.processData} disabled={!this.state.ok_req}> Start Campaign </button>
+                        {this.state.showToast && (<div className="toast-notification">{this.state.toastMessage} </div> )}
+                        <button type="button" class="btn btn-danger btn-lg rotating-button" style={{borderRadius:'80%', marginTop:'15px' ,marginLeft: '50px'}} onClick={this.injectData}> Attack </button>
                         </Col>
 
                     </Row>  
@@ -173,7 +148,7 @@ export default class PSDCampComponent extends Component {
     
     processData = () => {   
             // socket.emit('tx_metainfo', {snsid : "202481602060659", snsname : "imdea_adsb", month : "Sep",day : "1" , nation : "Esp",technology : "test",startf : "791",endf : "821", freq_start:'791000000'});
-            const socket = io("http://localhost:5000")
+            const socket = io("http://localhost:5001")
             let value_fstar=this.state.startf
             let value_f_end=this.state.endf
             let value_FreqStart=this.state.FreqStartHz
@@ -200,6 +175,11 @@ export default class PSDCampComponent extends Component {
             // });
             
             socket.on('ready_detect_tx', () => {
+                // Show toast here
+            this.setState({ showToast: true, toastMessage: 'Connected!!' });
+             setTimeout(() => {
+            this.setState({ showToast: false });
+        }, 10000); // Hide the toast after 5 seconds
                 console.log("Emit detect transmissions..")
                 console.log(this.state.ok_show)
                 socket.emit('tx_detection')
@@ -236,10 +216,10 @@ export default class PSDCampComponent extends Component {
     }
 
     injectData = () => {
-            const socket = io("http://localhost:5000")
+            const socket = io("http://localhost:5001")
             console.log("Emit inject signals..")
             socket.emit('inject_signals')
-
+            this.setState({ showSuccessBadge: true });
             socket.on('end_prediction',(data) => {
                 this.setState( 
                     {   
@@ -413,7 +393,7 @@ framework_test = () => {
         //         })
         
         // fetch("http://localhost:5005/services/api/v1.0/usertc/test", {
-        //         body: "{\"snsid\" : \"202481596708292\", \"snsname\" : \"rack_3\", \"month\" : \"May\", \"day\" : \"1\" , \"nation\" : \"Esp\", \"technology\" : \"test\", \"startf\" : \"20\", \"endf\" : \"1500\", \"freq_start\":\"20000000\", \"freq_end\":\"1500000000\" }",
+        //         body: "{\"snsid\" : \"202481596708292\", \"snsname\" : \"rack_3\", \"month\" : \"May\", \"day\" : \"1\" , \"nation\" : \"Esp\", \"technology\" : \"test\", \"startf\" : \"20\", \"endf\" : \"1500\", \"freq_start\":\"20000000\", \"freq_end\":\"1500100000\" }",
         //         headers: {
         //             Accept: "application/json",
         //             "Content-Type": "application/json; charset=utf-8",

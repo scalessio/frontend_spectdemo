@@ -30,15 +30,12 @@ export default class Waterfall extends Component{
             if (this.firstTime===true) {
                 console.log("First time drawing the spectrum...");
                 this.spectrum = new Spectrum("waterfall", { spanHz: parseInt(dataSpan, 10) });
-                let cf = (parseInt(dataCenterF[0], 10) + parseInt(dataCenterF[1], 10)) / 2;
-                let span = dataSpan * 10000;
-                this.spectrum.setCenterHz(cf);
-                this.spectrum.setSpanHz(span);
+                let CenterHz = (parseInt(dataCenterF[0], 10) + parseInt(dataCenterF[1], 10)) / 2;
+                let spanHz = dataSpan * 10000; 
+                this.spectrum.setCenterHz(CenterHz);
+                this.spectrum.setSpanHz(spanHz); //(100, 5377)r
                 this.firstTime = false;}
             this.startDrawing()
-            // Potresti voler cancellare il disegno precedente qui
-            // spectrum.clear() o un'operazione simile
-            // Riavvia il processo di disegno con i nuovi dati
         }
     }
 
@@ -61,7 +58,7 @@ export default class Waterfall extends Component{
                     </header>                    
                     <body>
                     {/* ref={this.canvasRef} */}
-                    <canvas id="waterfall" style={{border: "8px solid #d3d3a3" }}></canvas>
+                    <canvas id="waterfall" style={{border: "8px solid #d3d3a3" } }></canvas>
                         <p/>
                     </body>
             </div>
@@ -97,9 +94,8 @@ export default class Waterfall extends Component{
         const { dataSpectrum, dataLabel, dataBin } = this.props;
         if (index < dataSpectrum.length) {
             this.spectrum.addData(dataSpectrum[index]);
-            this.spectrum.addBoxPlot(dataLabel, dataBin);
+            this.spectrum.addBoxPlot(dataLabel, dataBin, 'dab');
             this.currentIndex = index + 1; // Aggiorna currentIndex per la prossima iterazione
-
             if (this.currentIndex === dataSpectrum.length) {
                 this.currentIndex = 0; // Ripeti dal primo indice se necessario
             }
