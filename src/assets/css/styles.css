@@ -1,0 +1,109 @@
+.bottom-spectrum-background {
+  background: url('../../assets/img/Light-Spectrum-Abstract.jpg') no-repeat center center;
+  background-size: cover; /* Questo assicura che l'immagine copra l'intera larghezza senza perdere le proporzioni */
+  width: 100%; /* Larghezza al 100% del contenitore */
+  height: 150px; /* Ajusta l'altezza secondo necessità */
+}
+
+/* Regole media query per garantire responsività */
+@media (max-width: 768px) {
+  .spectrum-background {
+    height: 100px; /* Ajusta l'altezza per dispositivi più piccoli se necessario */
+  }
+}
+
+@media (max-width: 480px) {
+  .spectrum-background {
+    height: 50px; /* Ajusta ulteriormente per dispositivi molto piccoli */
+  }
+}
+
+.navbar-brand {
+  background: url("../../assets/img/D_Zx-zGz_400x400.png") center / cover no-repeat;
+  width: 100px;
+  height: 100px;
+  
+  max-width: 100%;
+  max-height: 100%;
+  
+  padding-right: 60px;
+  padding-left: 60px;
+  padding-bottom: 62px;
+  padding-top: 23px;
+  
+  margin-right: 50px;
+  margin-left: 0px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+
+.collapse.navbar-collapse {
+  justify-content: left; 
+  margin-left: 20px;
+}
+
+.navbar{
+  background-color: #000;
+  padding: 0px;
+  background: linear-gradient(white 0%, black 22%), rgb(2,9,12);
+  height: 110px;
+}
+
+.nav-link {
+  color: rgba(215, 47, 47, 0.8);
+  font-size: 35px;
+  position: relative;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+  transition: color 0.3s ease; /* Assicurati che il colore cambi in modo fluido */
+}
+
+.nav-link:hover {
+  color: #fff; /* Assicura che il colore del testo cambi in bianco per mantenere la visibilità */
+  text-decoration: none;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background: #fff; /* Usa un colore che contrasti bene con il tuo tema */
+  transition: width 0.3s;
+  bottom: -5px; /* Ajusta questa proprietà se necessario */
+  left: 0;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+
+body {
+  margin-top: 10px;
+}
+
+.prod {
+  padding-top: 20px;
+  /*text-align: center;*/
+}
+
+.prodouct h1 {
+  color: var(--bs-form-valid-color);
+}
+
+h1 {
+}
+
+image-div-spec {
+}
+
+.img-class-spect {
+  max-width: 100%;
+  max-height: 100%;
+  height: 101px;
+}
+
+.logo {
+  max-height: 50px;
+  width: auto; }
+

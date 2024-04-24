@@ -55,37 +55,42 @@ Spectrum.prototype.addWaterfallRow = function(bins) {
 
 // Add label
 Spectrum.prototype.createLabel = function(labelTech,start,colorStyle,confidence) {
-    this.ctx.font = "bold 18px Verdana";
+    this.ctx.font = "bold 25px Verdana";
     this.ctx.fillStyle = colorStyle;
-    this.ctx.fillText(labelTech, start/2, 250);
-    this.ctx.fillText(confidence, start/2, 280);
+    this.ctx.fillText(labelTech.toUpperCase()+'  '+confidence+'%', start/2, 25);
+
 }
 // Add data methods take as input the bins
-Spectrum.prototype.addBoxPlot = function(transmissions_labels, transmission_bins){
-    console.log(transmissions_labels)
-    // if(transmissions_labels.length > 8){
-    //     transmissions_labels.length = transmissions_labels.length-3
-    // }
-    for (let i = 0; i < transmissions_labels.length ; i++) { 
-        //labelindex, confidence, startf, endf
-        var tx_1 = transmission_bins[i]    
-        var start =  tx_1[0]
-        var end = tx_1[1]
-        var widt = (end-start)/2
+Spectrum.prototype.addBoxPlot = function(transmissions_labels, transmission_bins, targetLabel){
 
-        var selected__signal = transmissions_labels[i] 
-        var signalLabel = selected__signal[2]
-        var signalLabel_confidence = selected__signal[1]
-        var colorLabel = 'green'
+    // Assuming dataWidth is the original width the data is meant to represent
+    const scalingFactor = (this.canvas.width / this.wf_size);
+    console.log("this.canvas.width", this.canvas.width) // Is the current width of the canvas 2811
+    console.log("this.wf_size", this.wf_size)           // Is the original data from the backend 5377
 
-        
-        this.ctx.lineWidth = 1;
-        this.ctx.strokeStyle = 'green';
-        this.createLabel(signalLabel,start,colorLabel,signalLabel_confidence)
-        this.ctx.strokeRect(start/2, 90, widt, 100);
+    for (let i = 0; i < transmissions_labels.length; i++) { 
+        var tx_1 = transmission_bins[i];
+        var start = tx_1[0];
+        var end =  tx_1[1];
+        var width = (end - start) / 2;
+
+        var selected_signal = transmissions_labels[i];
+        var signalLabel = selected_signal[1];
+        var signalLabel_confidence = selected_signal[2];
+        // Determine the color based on the match with targetLabel
+        var colorLabel = (signalLabel === targetLabel) ? 'green' : 'red';
+
+        this.ctx.lineWidth = 8;
+        this.ctx.strokeStyle = colorLabel; // Usa colorLabel per il colore del tratto
+        this.createLabel(signalLabel, start, colorLabel, signalLabel_confidence);
+        this.ctx.strokeRect(start/2, 90, width, this.canvas.height);
     }
-    
 }
+
+// Spectrum.prototype.updateCanvasSize = function(width, dataSpan) {
+//     this.canvasWidth = width;
+//     this.scaleFactor = this.canvasWidth / dataSpan; // Qui dataSpan deve essere nella stessa unità usata per definire la larghezza dello spettro
+// };
 
 Spectrum.prototype.drawFFT = function(bins) {
     
@@ -174,7 +179,7 @@ Spectrum.prototype.drawSpectrum = function(bins) {
 }
 
 Spectrum.prototype.updateAxes = function() {
-    var width = this.ctx_axes.canvas.width;
+    var width = this.ctx_axes.canvas.width; 
     var height = this.ctx_axes.canvas.height;
 
     // Clear axes canvas
@@ -233,9 +238,9 @@ Spectrum.prototype.updateAxes = function() {
 // Add data methods take as input the bins
 Spectrum.prototype.addData = function(data) {
     if (!this.paused) {
-        if (data.length != this.wf_size) {
+        if (data.length != this.wf_size) {   //// Si deve fare un tentativo qui per vedere se quando fa add data, prima vedi quanto e' 
             this.wf_size = data.length;
-            console.log("Data lenght and wf Size are not the same")
+            console.log("Data lenght and wf Size are not the same") 
             console.log(this.wf_size)
             this.ctx_wf.canvas.width = data.length;
             this.ctx_wf.fillStyle = "black";
@@ -428,6 +433,8 @@ Spectrum.prototype.onKeypress = function(e) {
     }
 }
 
+
+
 function Spectrum(id, options) {
     // Handle options
     this.centerHz = (options && options.centerHz) ? options.centerHz : 0;
@@ -438,6 +445,10 @@ function Spectrum(id, options) {
     this.spectrumPercentStep = (options && options.spectrumPercentStep) ? options.spectrumPercentStep : 5;
     this.averaging = (options && options.averaging) ? options.averaging : 0;
     this.maxHold = (options && options.maxHold) ? options.maxHold : false;
+
+    // Track blinking label
+    this.labelsToBlink = [];
+
 
     // Setup state
     this.paused = false;
@@ -455,7 +466,8 @@ function Spectrum(id, options) {
     //this.canvas.height = this.canvas.clientHeight;
     //this.canvas.width = this.canvas.clientWidth;
     this.canvas.height = 350;
-    this.canvas.width = parseInt(this.spanHz,10)/2 // 3747/2; 
+    this.canvas.width = parseInt(this.spanHz,10)/2;// Anche inviando 4000 elementi fa lo zoom ---> Partire da qui e poi su AddData
+    //this.canvas.width = 1000;
     this.ctx = this.canvas.getContext("2d");
     this.ctx.fillStyle = "black";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);

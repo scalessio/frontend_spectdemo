@@ -1,0 +1,46 @@
+.toast-notification {
+    position: fixed;
+    top: 300px;
+    right: 640px;
+    background-color: rgb(5, 130, 9);
+    color: white;
+    padding: 10px;
+    border-radius: .25rem; /* Bootstrap's border radius */
+    z-index: 1050; /* Bootstrap's z-index level for modals and toasts */ 
+    font-size: 1.25rem; /* Larger, more readable text */
+    font-weight: bold; /* Bold text */
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15); /* Bootstrap-like box shadow */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 300px; /* Ensure the toast is not too narrow */
+}
+
+.table-custom-text{
+  margin-left: 150px;
+}
+
+.btn-warning-custom {
+    margin-top: 15px;
+}
+
+
+@keyframes rotatingButton {
+    from {
+      transform: rotateY(0deg);
+    }
+    to {
+      transform: rotateY(360deg);
+    }
+  }
+  
+  .rotating-button {
+    animation: rotatingButton 10s linear infinite; 
+  }
+
+  .rotating-button:hover {
+    animation-play-state: paused; 
+    transform: rotateY(0deg);
+  }
+
+
