@@ -17,7 +17,9 @@ Once you have successfully installed npm and Docker Engine, you can proceed with
 
 To run the React app, navigate to the project directory in your terminal and execute the following command:
 
-### `npm start`
+ ```bash
+    npm start
+
 
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser the interface of the specturm anomaly detection.
 
