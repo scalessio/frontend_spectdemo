@@ -27,7 +27,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser th
 
 # Run backend
 
-To run the backend, follow these steps:
+To run the backend toy demo, follow these steps:
 
 1. Download the Docker container from the Docker Hub by running the following command in your terminal:
 
