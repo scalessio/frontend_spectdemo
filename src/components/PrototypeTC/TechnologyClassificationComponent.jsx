@@ -10,7 +10,7 @@ export default class TechnologyClassificationComponent extends Component{
         return(
             <div className='TechnologyClassificationComponent'>
                 <p/>
-                <h2> Spectrum Anomaly Detection Engine </h2>
+                <h2 className='custom-h2 blinking'> Spectrum anomaly detection engine </h2>
                 <PSDCampComponent/>
                 <p/>
                 

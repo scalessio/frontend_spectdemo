@@ -133,7 +133,7 @@ export default class PSDCampComponent extends Component {
 
                     {/*Spectrogram*/}
                     { <Row>
-                        <h2>Transmission Detection and Tecnology Classification</h2> 
+                        <h2> </h2> 
                     </Row>
                     }
                     <Row>
